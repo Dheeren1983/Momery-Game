@@ -16,6 +16,9 @@ import jasprit from "./Assets/jasprit.jpg";
 import ravindra from "./Assets/ravindra.jpg";
 import shreyash from "./Assets/shreyash.jpg";
 import siraj from "./Assets/siraj.jpg";
+const flipSound = new Audio("https://assets.mixkit.co/sfx/preview/mixkit-game-click-1114.mp3");
+const clapSound = new Audio("https://assets.mixkit.co/sfx/preview/mixkit-small-crowd-applause-502.mp3");
+
 
 const cricketers = [
   virat, rohit, msdhoni, kapil, sachin, dhawan, arshdeep, shubhman,
@@ -35,6 +38,7 @@ function App() {
   const [playerCount, setPlayerCount] = useState(null);
   const [playerTurn, setPlayerTurn] = useState(1);
   const [score, setScore] = useState({});
+  const [result, setResult] = useState(null);
 
   useEffect(() => {
     if (playerCount) {
@@ -44,12 +48,22 @@ function App() {
       }
       setScore(initialScore);
       setCards(shuffle(cricketers));
+      setResult(null);
     }
   }, [playerCount]);
+  const playFlipSound = () => {
+    const audio = new Audio(flipSound);
+    audio.play();
+  };
 
+  // Function to play clapping sound
+  const playClapSound = () => {
+    const audio = new Audio(clapSound);
+    audio.play();
+  };
   const handleClick = (card) => {
     if (flippedCards.length === 2 || card.flipped || card.matched) return;
-
+    playFlipSound();
     const newCards = cards.map((c) =>
       c.id === card.id ? { ...c, flipped: true } : c
     );
@@ -101,17 +115,19 @@ function App() {
       const winnerText =
         winners.length > 1
           ? "🤝 It's a Tie!"
-          : `🏆 Player ${winners[0]} Wins!`;
+          : `🏆 Player ${winners[0]} Wins! 👏👏`;
+          if (winners.length === 1) playClapSound();
+          const resultText =
 
-      setTimeout(() => {
-        alert(
-          `Game Over!\n\n` +
-            Object.keys(score)
-              .map((p) => `Player ${p}: ${score[p]}`)
-              .join("\n") +
-            `\n${winnerText}`
-        );
-      }, 500);
+          Object.keys(score)
+  
+            .map((p) => `Player ${p}: ${score[p]}`)
+  
+            .join(" | ") + `\n${winnerText}`;
+  
+  
+  
+        setResult(resultText);
     }
   }, [cards, score, playerCount]);
 
@@ -121,6 +137,7 @@ function App() {
     setPlayerTurn(1);
     setPlayerCount(null);
     setScore({});
+    setResult(null);
   };
 
   return (
@@ -166,6 +183,15 @@ function App() {
           <button className="restart-btn" onClick={restartGame}>
             🔄 Restart Game
           </button>
+          {result && (
+
+<div className="result" style={{ fontSize: '1.5rem', textAlign: 'center', marginTop: '1rem', fontWeight: 'bold' }}>
+
+  {result}
+
+</div>
+
+)}
         </>
       )}
     </div>
