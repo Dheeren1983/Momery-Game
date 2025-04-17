@@ -16,9 +16,11 @@ import jasprit from "./Assets/jasprit.jpg";
 import ravindra from "./Assets/ravindra.jpg";
 import shreyash from "./Assets/shreyash.jpg";
 import siraj from "./Assets/siraj.jpg";
-const cricketers = [virat, rohit, msdhoni, kapil, sachin, dhawan, arshdeep, shubhman, abhishek, 
-  dinesh, harbhajan, hardik, jasprit, ravindra, shreyash, siraj ];
 
+const cricketers = [
+  virat, rohit, msdhoni, kapil, sachin, dhawan, arshdeep, shubhman,
+  abhishek, dinesh, harbhajan, hardik, jasprit, ravindra, shreyash, siraj
+];
 
 function shuffle(images) {
   const duplicated = [...images, ...images];
@@ -30,12 +32,20 @@ function shuffle(images) {
 function App() {
   const [cards, setCards] = useState([]);
   const [flippedCards, setFlippedCards] = useState([]);
+  const [playerCount, setPlayerCount] = useState(null);
   const [playerTurn, setPlayerTurn] = useState(1);
-  const [score, setScore] = useState({ 1: 0, 2: 0, 3: 0, 4: 0 });
+  const [score, setScore] = useState({});
 
   useEffect(() => {
-    setCards(shuffle(cricketers));
-  }, []);
+    if (playerCount) {
+      const initialScore = {};
+      for (let i = 1; i <= playerCount; i++) {
+        initialScore[i] = 0;
+      }
+      setScore(initialScore);
+      setCards(shuffle(cricketers));
+    }
+  }, [playerCount]);
 
   const handleClick = (card) => {
     if (flippedCards.length === 2 || card.flipped || card.matched) return;
@@ -72,65 +82,94 @@ function App() {
             )
           );
           setFlippedCards([]);
-          setPlayerTurn((prev) => (prev === 4 ? 1 :  prev + 1));
+          setPlayerTurn((prev) => (prev === playerCount ? 1 : prev + 1));
         }, 1000);
       }
     }
   };
 
   useEffect(() => {
-    if (cards.length > 0 && cards.every((card) => card.matched)) {
-      const winner =
-        score[1] > score[2] > score[3] > score[4]
-          ? '🏆 Player 1 Wins!'
-          : score[4] > score[1]
-          ? '🏆 Player 4 Wins!'
-          : "🤝 It's a Tie!";
+    if (
+      playerCount &&
+      cards.length > 0 &&
+      cards.every((card) => card.matched)
+    ) {
+      const maxScore = Math.max(...Object.values(score));
+      const winners = Object.keys(score).filter(
+        (player) => score[player] === maxScore
+      );
+      const winnerText =
+        winners.length > 1
+          ? "🤝 It's a Tie!"
+          : `🏆 Player ${winners[0]} Wins!`;
+
       setTimeout(() => {
         alert(
-          `Game Over!\n\nPlayer 1: ${score[1]}\nPlayer 2: ${score[2]}\n\nPlayer 3: ${score[3]}\n\nPlayer 4: ${score[4]}\n${winner}`
+          `Game Over!\n\n` +
+            Object.keys(score)
+              .map((p) => `Player ${p}: ${score[p]}`)
+              .join("\n") +
+            `\n${winnerText}`
         );
       }, 500);
     }
-  }, [cards, score]);
+  }, [cards, score, playerCount]);
 
   const restartGame = () => {
-    setCards(shuffle(cricketers));
+    setCards([]);
     setFlippedCards([]);
     setPlayerTurn(1);
-    setScore({ 1: 0, 2: 0, 3: 0, 4: 0 });
+    setPlayerCount(null);
+    setScore({});
   };
 
   return (
     <div className="app">
       <h1>Memory Game</h1>
-      <div className="scoreboard">
-        <span className={playerTurn === 1 ? 'active' : ''}>Player 1: {score[1]}</span>
-        <span className={playerTurn === 2 ? 'active' : ''}>Player 2: {score[2]}</span>
-        <span className={playerTurn === 3 ? 'active' : ''}>Player 3: {score[3]}</span>
-        <span className={playerTurn === 4 ? 'active' : ''}>Player 4: {score[4]}</span>
-      </div>
-      <div className="grid">
-        {cards.map((card) => (
-          <div
-            key={card.id}
-            className={`card ${card.flipped || card.matched ? 'flipped' : ''}`}
-            onClick={() => handleClick(card)}
-          >
-            <div className="inner">
-              <div className="front">❓</div>
-              <div className="back">
-                <img src={card.image} alt="cricketer" />
-              </div>
-            </div>
+
+      {!playerCount && (
+        <div className="player-select">
+          <h2>Select number of players</h2>
+          {[2, 3, 4].map((count) => (
+            <button key={count} onClick={() => setPlayerCount(count)}>
+              {count} Players
+            </button>
+          ))}
+        </div>
+      )}
+
+      {playerCount && (
+        <>
+          <div className="scoreboard">
+            {Object.keys(score).map((p) => (
+              <span key={p} className={playerTurn === Number(p) ? 'active' : ''}>
+                Player {p}: {score[p]}
+              </span>
+            ))}
           </div>
-        ))}
-      </div>
-      <button className="restart-btn" onClick={restartGame}>
-        🔄 Restart Game
-      </button>
+          <div className="grid">
+            {cards.map((card) => (
+              <div
+                key={card.id}
+                className={`card ${card.flipped || card.matched ? 'flipped' : ''}`}
+                onClick={() => handleClick(card)}
+              >
+                <div className="inner">
+                  <div className="front">❓</div>
+                  <div className="back">
+                    <img src={card.image} alt="cricketer" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <button className="restart-btn" onClick={restartGame}>
+            🔄 Restart Game
+          </button>
+        </>
+      )}
     </div>
   );
 }
 
-export default App; 
+export default App;
