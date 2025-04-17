@@ -165,12 +165,7 @@ h1 {
     grid-template-columns: repeat(4, 70px);
   }
 }
-@media (max-width: 991px) {
-  
-  .grid{
-    grid-template-columns: repeat(4, 100px);
-  }
-}
+
 
 .player-select {
   text-align: center;
