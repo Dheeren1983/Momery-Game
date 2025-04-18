@@ -16,8 +16,10 @@ import jasprit from "./Assets/jasprit.jpg";
 import ravindra from "./Assets/ravindra.jpg";
 import shreyash from "./Assets/shreyash.jpg";
 import siraj from "./Assets/siraj.jpg";
-const flipSound = new Audio("https://assets.mixkit.co/sfx/preview/mixkit-game-click-1114.mp3");
-const clapSound = new Audio("https://assets.mixkit.co/sfx/preview/mixkit-small-crowd-applause-502.mp3");
+
+const flipSound = new Audio(process.env.PUBLIC_URL + "/sounds/flip_sound.mp3");
+const clapSound = new Audio(process.env.PUBLIC_URL + "/sounds/clap_sound.mp3");
+
 
 
 const cricketers = [
@@ -51,19 +53,24 @@ function App() {
       setResult(null);
     }
   }, [playerCount]);
+
+  // ✅ Play flip sound
   const playFlipSound = () => {
-    const audio = new Audio(flipSound);
-    audio.play();
+    flipSound.currentTime = 0;
+    flipSound.play();
   };
 
-  // Function to play clapping sound
+  // ✅ Play clapping sound
   const playClapSound = () => {
-    const audio = new Audio(clapSound);
-    audio.play();
+    clapSound.currentTime = 0;
+    clapSound.play();
   };
+
   const handleClick = (card) => {
     if (flippedCards.length === 2 || card.flipped || card.matched) return;
+
     playFlipSound();
+
     const newCards = cards.map((c) =>
       c.id === card.id ? { ...c, flipped: true } : c
     );
@@ -116,18 +123,13 @@ function App() {
         winners.length > 1
           ? "🤝 It's a Tie!"
           : `🏆 Player ${winners[0]} Wins! 👏👏`;
-          if (winners.length === 1) playClapSound();
-          const resultText =
+      if (winners.length === 1) playClapSound();
 
-          Object.keys(score)
-  
-            .map((p) => `Player ${p}: ${score[p]}`)
-  
-            .join(" | ") + `\n${winnerText}`;
-  
-  
-  
-        setResult(resultText);
+      const resultText =
+        Object.keys(score)
+          .map((p) => `Player ${p}: ${score[p]}`)
+          .join(" | ") + `\n${winnerText}`;
+      setResult(resultText);
     }
   }, [cards, score, playerCount]);
 
@@ -164,6 +166,7 @@ function App() {
               </span>
             ))}
           </div>
+
           <div className="grid">
             {cards.map((card) => (
               <div
@@ -180,18 +183,24 @@ function App() {
               </div>
             ))}
           </div>
+
           <button className="restart-btn" onClick={restartGame}>
             🔄 Restart Game
           </button>
+
           {result && (
-
-<div className="result" style={{ fontSize: '1.5rem', textAlign: 'center', marginTop: '1rem', fontWeight: 'bold' }}>
-
-  {result}
-
-</div>
-
-)}
+            <div
+              className="result"
+              style={{
+                fontSize: '1.5rem',
+                textAlign: 'center',
+                marginTop: '1rem',
+                fontWeight: 'bold'
+              }}
+            >
+              {result}
+            </div>
+          )}
         </>
       )}
     </div>
